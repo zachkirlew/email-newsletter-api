@@ -8,6 +8,22 @@ authors = ["Zach Kirlew <zachkirlew@gmail.com>"]
 actix-web = "4"
 tokio = { version = "1.36.0", features = ["rt", "rt-multi-thread", "macros"] }
 reqwest = "0.11.25"
+serde = { version = "1.0.197", features = ["derive"] }
+config = "0.14.0"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
+
+# Using table-like toml syntax to avoid a super-long line!
+[dependencies.sqlx]
+version = "0.7"
+default-features = false
+features = [
+"runtime-tokio-rustls", "macros",
+"postgres",
+"uuid",
+"chrono",
+"migrate"
+]
 
 [lib]
 path = "src/lib.rs"
