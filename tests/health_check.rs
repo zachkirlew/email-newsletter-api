@@ -1,4 +1,6 @@
 use email_newsletter_api::startup::run;
+use email_newsletter_api::telemetry::{get_tracing_subscriber, init_subscriber};
+use once_cell::sync::Lazy;
 use sqlx::PgPool;
 use std::net::TcpListener;
 
@@ -72,12 +74,19 @@ async fn subscribe_returns_a_400_when_data_is_missing(pool: PgPool) {
     }
 }
 
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let subscriber = get_tracing_subscriber("test".into(), "warn".into());
+    init_subscriber(subscriber);
+});
+
 pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
 }
 
 async fn spawn_app(pool: PgPool) -> TestApp {
+    Lazy::force(&TRACING);
+
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     // Port 0 will trigger an OS scan for an available port which will then be bound to the application.
     let port = listener.local_addr().unwrap().port();
