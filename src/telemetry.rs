@@ -7,13 +7,12 @@ use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 pub fn get_tracing_subscriber(name: String, env_filter: String) -> impl Subscriber + Send + Sync {
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
-    let formatting_layer = BunyanFormattingLayer::new(name.into(), std::io::stdout);
+    let formatting_layer = BunyanFormattingLayer::new(name, std::io::stdout);
 
-    let tracing_subscriber = Registry::default()
+    Registry::default()
         .with(env_filter)
         .with(JsonStorageLayer)
-        .with(formatting_layer);
-    tracing_subscriber
+        .with(formatting_layer)
 }
 
 pub fn init_subscriber(subscriber: impl Subscriber + Send + Sync) {
