@@ -1,8 +1,8 @@
 use email_newsletter_api::startup::run;
+use email_newsletter_api::telemetry::{get_tracing_subscriber, init_subscriber};
+use once_cell::sync::Lazy;
 use sqlx::PgPool;
 use std::net::TcpListener;
-use once_cell::sync::Lazy;
-use email_newsletter_api::telemetry::{get_tracing_subscriber, init_subscriber};
 
 #[sqlx::test]
 async fn health_check_works(pool: PgPool) {
@@ -75,7 +75,8 @@ async fn subscribe_returns_a_400_when_data_is_missing(pool: PgPool) {
 }
 
 static TRACING: Lazy<()> = Lazy::new(|| {
-    let subscriber = get_tracing_subscriber("test".into(), "warn".into()); init_subscriber(subscriber);
+    let subscriber = get_tracing_subscriber("test".into(), "warn".into());
+    init_subscriber(subscriber);
 });
 
 pub struct TestApp {
