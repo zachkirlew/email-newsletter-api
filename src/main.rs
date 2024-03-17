@@ -10,10 +10,9 @@ async fn main() -> Result<(), std::io::Error> {
     init_subscriber(tracing_subscriber);
 
     let configuration = configuration::get_configuration().expect("Failed to read configuration");
-    let connection_pool =
-        PgPool::connect_with(configuration.database.with_db())
-            .await
-            .expect("Failed to connect to Postgres.");
+    let connection_pool = PgPool::connect_with(configuration.database.with_db())
+        .await
+        .expect("Failed to connect to Postgres.");
 
     let address = format!(
         "{}:{}",

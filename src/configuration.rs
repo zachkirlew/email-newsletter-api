@@ -31,7 +31,11 @@ pub struct DatabaseSettings {
 
 impl DatabaseSettings {
     pub fn without_db(&self) -> PgConnectOptions {
-        let ssl_mode = if (self.require_ssl) { PgSslMode::Require } else { PgSslMode::Prefer };
+        let ssl_mode = if (self.require_ssl) {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
         PgConnectOptions::new()
             .host(&self.host)
             .username(&self.username)
@@ -61,7 +65,9 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
             configuration_directory.join(environment_filename),
         ))
         .add_source(
-            config::Environment::with_prefix("APP").prefix_separator("_").separator("__")
+            config::Environment::with_prefix("APP")
+                .prefix_separator("_")
+                .separator("__"),
         )
         .build()?;
 
