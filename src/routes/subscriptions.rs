@@ -33,7 +33,7 @@ pub async fn subscribe(form: Form<FormData>, db_pool: web::Data<PgPool>) -> impl
 }
 
 impl TryFrom<FormData> for NewSubscriber {
-    type Error = ();
+    type Error = String;
 
     fn try_from(value: FormData) -> Result<Self, Self::Error> {
         let name = SubscriberName::parse(value.name)?;
