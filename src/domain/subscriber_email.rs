@@ -19,7 +19,6 @@ impl AsRef<str> for SubscriberEmail {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::SubscriberEmail;

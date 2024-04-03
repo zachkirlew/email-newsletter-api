@@ -4,20 +4,17 @@ use unicode_segmentation::UnicodeSegmentation;
 pub struct SubscriberName(String);
 
 impl SubscriberName {
-    pub fn parse(name: String) -> Result<SubscriberName,String> {
+    pub fn parse(name: String) -> Result<SubscriberName, String> {
         let is_empty_or_whitespace = name.trim().is_empty();
         let is_too_long = name.graphemes(true).count() > 256;
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
-        let contains_forbidden_characters = name
-            .chars()
-            .any(|g| forbidden_characters.contains(&g));
+        let contains_forbidden_characters = name.chars().any(|g| forbidden_characters.contains(&g));
         if is_empty_or_whitespace || is_too_long || contains_forbidden_characters {
             Err(format!("{} is not a valid subscriber name.", name))
         } else {
             Ok(Self(name))
         }
     }
-
 }
 
 impl AsRef<str> for SubscriberName {
@@ -46,17 +43,23 @@ mod tests {
     #[test]
     fn whitespace_only_names_are_rejected() {
         let name = " ".to_string();
-        assert_err!(SubscriberName::parse(name)); }
+        assert_err!(SubscriberName::parse(name));
+    }
     #[test]
     fn empty_string_is_rejected() {
         let name = "".to_string();
-        assert_err!(SubscriberName::parse(name)); }
+        assert_err!(SubscriberName::parse(name));
+    }
     #[test]
     fn names_containing_an_invalid_character_are_rejected() {
-        for name in &['/', '(', ')', '"', '<', '>', '\\', '{', '}'] { let name = name.to_string(); assert_err!(SubscriberName::parse(name));
-        } }
+        for name in &['/', '(', ')', '"', '<', '>', '\\', '{', '}'] {
+            let name = name.to_string();
+            assert_err!(SubscriberName::parse(name));
+        }
+    }
     #[test]
     fn a_valid_name_is_parsed_successfully() {
         let name = "Ursula Le Guin".to_string();
-        assert_ok!(SubscriberName::parse(name)); }
+        assert_ok!(SubscriberName::parse(name));
+    }
 }
