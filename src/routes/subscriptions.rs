@@ -3,6 +3,7 @@ use actix_web::{web, HttpResponse, Responder};
 use chrono::Utc;
 use serde::Deserialize;
 use sqlx::PgPool;
+use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 
 #[derive(Deserialize)]
 pub struct FormData {
@@ -20,30 +21,57 @@ subscriber_name = % form.name
 )
 ]
 pub async fn subscribe(form: Form<FormData>, db_pool: web::Data<PgPool>) -> impl Responder {
-    match insert_subscriber(&form, &db_pool).await {
+    let new_subscriber = match form.0.try_into() {
+        Ok(subscriber) => subscriber,
+        Err(_) => return HttpResponse::BadRequest().finish(),
+    };
+
+
+    match insert_subscriber(&db_pool, &new_subscriber).await {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
+impl TryFrom<FormData> for NewSubscriber{
+    type Error = ();
+
+    fn try_from(value: FormData) -> Result<Self, Self::Error> {
+        let name = SubscriberName::parse(value.name)?;
+        let email = SubscriberEmail::parse(value.email)?;
+        Ok(Self { name, email })
+    }
+}
+
+pub fn parse_subscriber(form: Form<FormData>) -> Result<NewSubscriber, String> {
+    let name = SubscriberName::parse(form.name.clone())?;
+
+    let email = SubscriberEmail::parse(form.email.clone())?;
+
+    Ok(NewSubscriber {
+        name,
+        email,
+    })
+}
+
 #[tracing::instrument(
-    name = "Saving new subscriber details in the database",
-    skip(form, db_pool)
+name = "Saving new subscriber details in the database",
+skip(db_pool, new_subscriber)
 )]
-pub async fn insert_subscriber(form: &FormData, db_pool: &PgPool) -> Result<(), sqlx::Error> {
+pub async fn insert_subscriber(db_pool: &PgPool, new_subscriber: &NewSubscriber) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         INSERT INTO subscriptions (name, email, subscribed_at) VALUES ($1, $2, $3)
         "#,
-        form.name,
-        form.email,
+        new_subscriber.name.as_ref(),
+        new_subscriber.email.as_ref(),
         Utc::now()
     )
-    .execute(db_pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
+        .execute(db_pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to execute query: {:?}", e);
+            e
+        })?;
     Ok(())
 }
